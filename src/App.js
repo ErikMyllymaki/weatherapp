@@ -4,15 +4,19 @@ import { useState, useEffect } from 'react';
 import './App.css';
 
 const URL = "https://api.openweathermap.org/data/2.5/"
-const API_KEY = "3dc7d49c3ac2cbba7fc993b57a40c7c1"
+const API_KEY = "Your API key here"
+const ICON_URL = "http://openweathermap.org/img/wn/"
 
 function App() {
 
   const [city, setCity] = useState("");
-  const [temp, setTemp] = useState(null)
-  const [feels_like, setFeels_like] = useState(null)
+  const [temp, setTemp] = useState(0)
+  const [feels_like, setFeels_like] = useState(0)
   const [weather, setWeather] = useState(null)
-  const [wind, setWind] = useState(null)
+  const [wind, setWind] = useState(0)
+  const [icon, setIcon] = useState("")
+  const [isLoading, setIsLoading] = useState(true)
+
 
 
   function getWeather() {
@@ -23,32 +27,53 @@ function App() {
 
     axios.get(address)
       .then((response) => {
-        console.log(response.data)
-        setTemp(response.data.main.temp)
-        setFeels_like(response.data.main.feels_like)
-        setWind(response.data.wind.speed)
+        console.log(response)
+        setIsLoading(false)
+        setTemp(response.data.main.temp.toFixed(1))
+        setFeels_like(response.data.main.feels_like.toFixed(1))
+        setWind(response.data.wind.speed.toFixed(1))
         setWeather(response.data.weather[0].description)
+        setIcon(ICON_URL + response.data.weather[0].icon + "@2x.png")
       }).catch(error => {
         alert("Kaupungin nimi ei toimi! Kokeile jotain muuta.")
+        results.style.display = "none"
       })
 
   }
 
-  return (
-    <div>
-      <h1>Hae kaupungin säätiedot</h1>
-      <label>Anna kaupungin nimi:</label>
-      <input type="text" name="city" value={city} onChange={e => setCity(e.target.value)} />
-      <button onClick={getWeather}>Hae säätiedot</button>
+  if (isLoading) {
+    return (
+      <div>
+        <h1>Hae kaupungin säätiedot</h1>
+        <label>Anna kaupungin nimi:</label>
+        <input type="text" name="city" value={city} onChange={e => setCity(e.target.value)} />
+        <button onClick={getWeather}>Hae säätiedot</button>
 
-      <div id='results'>
-        <p>Lämpötila: {temp} °C (Tuntuu kuin {feels_like} °C)</p>
-        <p>Keli: {weather}</p>
-        <p>Tuulennopeus: {wind} m/s</p>
+        <div id="results">
+          <p>Loading...</p>
+        </div>
+
       </div>
+    )
+  }
+  else {
 
-    </div>
-  );
+    return (
+      <div>
+        <h1>Hae kaupungin säätiedot</h1>
+        <label>Anna kaupungin nimi:</label>
+        <input type="text" name="city" value={city} onChange={e => setCity(e.target.value)} />
+        <button onClick={getWeather}>Hae säätiedot</button>
+
+        <div id='results'>
+          <p>Lämpötila: {temp} °C (Tuntuu kuin {feels_like} °C)</p>
+          <p>Keli: {weather} <img src={icon}/></p>
+          <p>Tuulennopeus: {wind} m/s</p>
+        </div>
+
+      </div>
+    );
+  }
 }
 
 export default App;
